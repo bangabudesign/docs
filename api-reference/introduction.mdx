@@ -1,33 +1,30 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "RapidSender API Reference"
+description: "Dive into our full API Reference Documentation and seamlessly integrate WhatsApp and Email functionalities into your website or application with the RapidSender APIs."
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+RapidSender's APIs use `HTTP verbs` and a `RESTful` endpoint structure. A Bearer token is used as the API Authorization framework. Request and response payloads are formatted as JSON (although we provide a GET alternative for requests), using UTF-8 encoding and URL encoded values.
 
-## Welcome
+## Api Endpoint
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+In order to use the APIs of the MessageBird Connectivity Platform, you need to have an account and log in to **the Dashboard**.
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```json
+https://rapidsender.net/api/v1
+```
 
 ## Authentication
 
 All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+With each API call, you will need to set request headers including your Bearer tokens to authenticate yourself.
+
+<Note>
+  Your API keys carry significant privileges. Please ensure to keep them 100% secure and be sure to not share your secret API keys in areas that are publicly accessible like GitHub. See API Access Key Security for more information.
+</Note>
+
+### Example Request
+
+```Curl
+curl -X GET https://rapidsender.net/api/v1 -H 'Authorization: Bearer N0b1E3rJszGv0e6pG3kD0WwMj4HnLZqY9PjUoAcx
 ```
