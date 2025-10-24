@@ -1,16 +1,16 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "title": "Vitopia Messaging API",
+    "description": "API untuk mengirim pesan WhatsApp melalui channel yang telah dikonfigurasi. Gunakan Authorization Bearer API key Anda untuk autentikasi.",
+    "version": "1.0.0",
     "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+      "name": "Proprietary"
+    }
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.vitopia.com"
     }
   ],
   "security": [
@@ -19,134 +19,109 @@
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
+    "/channels/{channelId}/messages": {
+      "post": {
+        "summary": "Kirim pesan WhatsApp",
+        "description": "Mengirim pesan ke penerima tertentu melalui channel WhatsApp yang sudah dikonfigurasi.",
+        "operationId": "sendWhatsappMessage",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
+            "name": "channelId",
+            "in": "path",
+            "description": "ID unik dari channel WhatsApp yang digunakan untuk mengirim pesan",
+            "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              },
+              "examples": {
+                "Text Message": {
+                  "summary": "Kirim pesan teks",
+                  "value": {
+                    "recipient": "+6281250335095",
+                    "type": "text",
+                    "text": "Example text message"
+                  }
+                },
+                "Image Message": {
+                  "summary": "Kirim pesan gambar",
+                  "value": {
+                    "recipient": "+6281250335095",
+                    "type": "image",
+                    "image_url": "https://example.com/image.jpg",
+                    "caption": "Example caption"
                   }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Pesan berhasil dikirim atau dijadwalkan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                },
+                "example": {
+                  "status": "queued",
+                  "message": "Pesan berhasil dimasukkan ke antrian.",
+                  "message_id": "c2b9e120-5a9b-4f5e-9b7c-78c45a2c1234"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Kesalahan validasi atau format payload tidak sesuai",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "invalid_request",
+                  "message": "Field 'recipient' wajib diisi."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key tidak valid atau tidak diberikan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "API key tidak valid atau telah kedaluwarsa."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "API key tidak memiliki izin untuk endpoint ini",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "API key Anda tidak memiliki izin untuk mengirim pesan WhatsApp."
+                }
+              }
+            }
           }
         }
       }
@@ -154,55 +129,63 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "SendMessageRequest": {
         "type": "object",
+        "required": ["recipient", "type"],
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "recipient": {
+            "type": "string",
+            "description": "Nomor telepon penerima dalam format internasional, contoh: +628123456789"
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
+          "type": {
+            "type": "string",
+            "enum": ["text", "image"],
+            "description": "Jenis pesan yang dikirim"
+          },
+          "text": {
+            "type": "string",
+            "description": "Isi pesan teks (wajib jika type=text)"
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL gambar (wajib jika type=image)"
+          },
+          "caption": {
+            "type": "string",
+            "description": "Keterangan gambar opsional"
           }
         }
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+      "MessageResponse": {
         "type": "object",
         "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
+          "status": {
+            "type": "string",
+            "description": "Status pesan: sent, queued, failed"
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "description": "Deskripsi hasil eksekusi"
+          },
+          "message_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID unik pesan yang dikirim"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error", "message"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Kode error"
+          },
+          "message": {
+            "type": "string",
+            "description": "Deskripsi error"
           }
         }
       }
@@ -210,7 +193,8 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "API Key"
       }
     }
   }
